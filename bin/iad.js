@@ -2,7 +2,7 @@
 
 const program = require('commander');
 const { readFile } = require('fs');
-const { parse } = require('../dist/bundle.node');
+const { check } = require('../dist/bundle.node');
 
 const BANNER = 'Integreatly Asciidoc';
 
@@ -37,8 +37,11 @@ function readFromStream(stream) {
 }
 
 function wrapWithContext(context) {
-  return function(rawAdoc) {
-    return parse(rawAdoc, null, context);
+  return function (raw) {
+    const success = check(raw, context);
+    if (!success) {
+      process.exit(1);
+    }
   }
 }
 
@@ -46,6 +49,7 @@ function main () {
   program
     .version(getVersion())
     .option('-f --file <file>', 'Input file')
+    .option('-W --warnings <level>', 'Treat warnings as errors when set to `error`')
     .parse(process.argv);
 
   if (program.file) {

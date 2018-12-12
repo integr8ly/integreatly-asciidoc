@@ -11,7 +11,7 @@ function reportAndCheckSuccess(logger, context) {
     const { severity, message: { text, source_location} } = message;
     if (severity === 'ERROR') {
       success = success && false;
-    } else if (severity === 'WARNING' && context['warnings'] === 'error') {
+    } else if (severity === 'WARN' && context['warnings'] === 'error') {
       success = success && false;
     }
 

@@ -8,8 +8,6 @@ Task description
 
 === Procedure section
 
-= Invalid
-
 Step one
 
 Step two

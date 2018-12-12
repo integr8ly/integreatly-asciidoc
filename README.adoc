@@ -1,0 +1,17 @@
+= Integreatly Asciidoc Check & Verify
+
+A library and a binary to parse Integreatly flavoured Asciidoc.
+
+== Building
+
+[souce,bash]
+----
+yarn run webpack --config webpack.config.js
+----
+
+== Running
+
+[source,bash]
+----
+./bin/iad.js -d <walkthrough path>
+----

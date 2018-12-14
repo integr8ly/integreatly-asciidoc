@@ -232,11 +232,12 @@ class Procedure {
 }
 
 class Task {
-  constructor(title, time, html, procedures) {
+  constructor(title, time, html, procedures, resources) {
     this._title = title;
     this._time = time;
     this._html = html;
     this._procedures = procedures;
+    this._resources = resources;
   }
 
   get title() {
@@ -256,20 +257,32 @@ class Task {
   }
 
   get resources() {
-    return this._procedures.filter(s => s instanceof TaskResource);
+    return this._resources;
   }
 
   static canConvert(adoc) {
     return adoc.context === CONTEXT_SECTION && adoc.level === BLOCK_LEVEL_TASK;
   }
 
+  // Task resources can be defined at task or step level so we have to recursively check all blocks
+  // that are lower in the document hierarchy
+  static collectTaskResources(task, collected) {
+    task.blocks.forEach(block => {
+      if (TaskResource.canConvert(block)) {
+        collected.push(TaskResource.fromAdoc(block));
+      } else if (block.blocks.length > 0) {
+        this.collectTaskResources(block, collected);
+      }
+    });
+  }
+
   static fromAdoc(adoc) {
     const title = adoc.title;
     const time = parseInt(adoc.getAttribute(BLOCK_ATTR_TIME), 10) || 0;
+    const collectedResources = [];
+    this.collectTaskResources(adoc, collectedResources);
     const procedures = adoc.blocks.reduce((acc, b) => {
-      if (TaskResource.canConvert(b)) {
-        acc.push(TaskResource.fromAdoc(b));
-      } else if (Procedure.canConvert(b)) {
+      if (Procedure.canConvert(b)) {
         acc.push(Procedure.fromAdoc(b));
       } else if (Paragraph.canConvert(b)) {
         acc.push(Paragraph.fromAdoc(b));
@@ -277,7 +290,7 @@ class Task {
       return acc;
     }, []);
 
-    return new Task(title, time, adoc.convert(), procedures);
+    return new Task(title, time, adoc.convert(), procedures, collectedResources);
   }
 }
 
@@ -310,15 +323,31 @@ class Walkthrough {
     return this._resources;
   }
 
+    // Walkthrough resources are always defined at preamble level
+  static collectWalkthroughResources(preamble) {
+    const resources = [];
+    preamble.blocks = preamble.blocks.reduce((acc, block) => {
+      if (WalkthroughResource.canConvert(block)) {
+        resources.push(WalkthroughResource.fromAdoc(block));
+      } else {
+        acc.push(block);
+      }
+      return acc;
+    }, []);
+    return resources;
+  }
+
   static fromAdoc(adoc) {
     const title = adoc.getDocumentTitle();
-    const resources = adoc.blocks
-      .filter(b => WalkthroughResource.canConvert(b))
-      .map(b => WalkthroughResource.fromAdoc(b));
+    if (adoc.blocks.length < 1) {
+      throw new Error(`Invalid Walkthrough ${title}`);
+    }
+    const resources = this.collectWalkthroughResources(adoc.blocks[0]);
     const preamble = adoc.blocks[0].convert();
     const tasks = adoc.blocks.filter(b => Task.canConvert(b)).map(b => Task.fromAdoc(b));
-    const time = tasks.reduce((acc, t) => acc + t.time || 0, 0);
+    const time = tasks.reduce((acc, t) => acc + t._time || 0, 0);
     return new Walkthrough(title, preamble, time, tasks, resources);
+
   }
 }
 

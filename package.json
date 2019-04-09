@@ -1,6 +1,6 @@
 {
   "name": "integreatly-asciidoc",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Integreatly flavoured Asciidoc Parser",
   "main": "dist/bundle.web.js",
   "license": "Apache 2.0",

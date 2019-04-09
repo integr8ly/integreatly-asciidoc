@@ -19,6 +19,25 @@
       ],
       "additionalProperties": false,
       "properties": {
+        "managedServices": {
+          "$id": "#/properties/dependencies/properties/managedServices",
+          "type": "array",
+          "title": "The Managed Services Schema",
+          "items": {
+            "$id": "#/properies/dependencies/properties/managedServices/items",
+            "type": "object",
+            "title": "The Items Schema",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "$id": "#/properties/dependencies/properties/managedServices/items/properties/name",
+                "type": "string"
+              }
+            }
+          }
+        },
         "repos": {
           "$id": "#/properties/dependencies/properties/repos",
           "type": "array",
